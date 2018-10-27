@@ -139,7 +139,7 @@ public class Midi {
      * Wait for a duration in hundredths of a second.
      * @requires duration >= 0
      */
-    public static void rest(int duration) {
+    public static void rest(int duration) { //10 for 100ms
         long now = System.currentTimeMillis();
         long end = now + 10*duration;
         while (now < end) {
