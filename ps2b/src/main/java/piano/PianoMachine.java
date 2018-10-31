@@ -6,7 +6,7 @@ import midi.*;
 import music.*;
 
 import java.util.ArrayList;
-import java.util.Date;
+//import java.util.Date;
 import static midi.Midi.DEFAULT_INSTRUMENT;
 
 public class PianoMachine {
@@ -18,7 +18,7 @@ public class PianoMachine {
     private int octave = 0;
     private boolean isRecording = false;
     private ArrayList<NoteEvent> recording = new ArrayList<>();
-    private long timestamp;
+    //private long timestamp;
 
 	/**
 	 * constructor for PianoMachine.
@@ -48,7 +48,8 @@ public class PianoMachine {
             isPlaying.add(pitch);
         }
         if (isRecording){
-            NoteEvent newEvent = new NoteEvent(pitch, new Date().getTime(), instrument, NoteEvent.Kind.start);
+            //NoteEvent newEvent = new NoteEvent(pitch, new Date().getTime(), instrument, NoteEvent.Kind.start);
+            NoteEvent newEvent = new NoteEvent(pitch, System.currentTimeMillis(), instrument, NoteEvent.Kind.start);
             recording.add(newEvent);
         }
     }
@@ -66,7 +67,8 @@ public class PianoMachine {
             isPlaying.remove(pitch);
         }
         if (isRecording){
-            NoteEvent newEvent = new NoteEvent(pitch, new Date().getTime(), instrument, NoteEvent.Kind.stop);
+            //NoteEvent newEvent = new NoteEvent(pitch, new Date().getTime(), instrument, NoteEvent.Kind.stop);
+            NoteEvent newEvent = new NoteEvent(pitch, System.currentTimeMillis(), instrument, NoteEvent.Kind.stop);
             recording.add(newEvent);
         }
     }
@@ -109,8 +111,8 @@ public class PianoMachine {
     public boolean toggleRecording() {
         isRecording = !isRecording;
         if (isRecording) {
-            recording = new ArrayList<>();
-            timestamp = new Date().getTime();
+            recording = new ArrayList<NoteEvent>();
+            //timestamp = new Date().getTime();
         }
         return isRecording;
     }
@@ -120,6 +122,7 @@ public class PianoMachine {
      *
      */
     public void playback() {
+        /*
         for (NoteEvent e: recording) {
             long timeDiff = ((e.getTime() - timestamp)/10);
             midi.rest((int) timeDiff);
@@ -129,6 +132,25 @@ public class PianoMachine {
                 midi.endNote(e.getPitch().toMidiFrequency(), e.getInstr());
             }
             timestamp = e.getTime();
+        }
+        */
+        public void playback() {
+            long timestamp = 0;
+            
+            for (NoteEvent e: recording) {
+                
+                if (timestamp>0) {
+                    Midi.rest((int)Math.round((e.getTime() - timestamp)/10.0));
+                }
+                
+                timestamp = e.getTime();
+                
+                if (e.getKind() == music.NoteEvent.Kind.start) {
+                    midi.beginNote(e.getPitch().toMidiFrequency(), e.getInstr());
+                } else if (e.getKind() == music.NoteEvent.Kind.stop) {
+                    midi.endNote(e.getPitch().toMidiFrequency(),e.getInstr());
+                }
+            }
         }
     }
 
